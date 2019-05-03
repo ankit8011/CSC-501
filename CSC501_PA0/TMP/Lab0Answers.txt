@@ -1,0 +1,100 @@
+/*********************************************
+Name : Ankit Manendra
+Unity ID : amanend
+Assignment Number: PA0
+**********************************************/
+
+Question 1: Assuming the XINU text begins at address 0x0, draw a rough diagram of XINUs memory layout with addresses derived from your experimental measurements. Include the information you uncovered from running your version of printsegaddress() and printprocstks().
+
+Answer: XINU Memory Layout:
+
+Free memory
+---------------------
+				-> Base: 0x00fffffc
+
+Stack (prnull)			-> pointer: 0x00ffff0c
+
+				-> limit: 0x00fff000
+---------------------		
+				-> Base: 0x00ffeff8
+				
+Stack (main process)		-> pointer: 0x00ffeec0
+
+				-> limit: 0x00ffdffc
+---------------------		
+Heap
+---------------------		-> 0x0002ad14
+Uninitialized
+Data (BSS)
+---------------------		-> 0x00022678
+Data
+---------------------		-> 0x0001d88c
+Text
+---------------------		-> 0x00000000 
+
+/************************************************************************************/
+
+Question 2: What is the difference in stack top address before and after calling printtos() ? Draw a diagram to illustrate what are the contents of the items pushed into the stack between these two time points.
+
+Answer: Before calling printtos, the top address is 0x00ffefd0 and after the printtos, top address is 0x00ffefc8.
+
+Illustration of the contents of the stack:
+
+CONTENTS		MEMORY ADDRESS
+
+------------------	-> 0x00ffefd0
+Return Address		
+------------------
+ebp			-> 0x00ffefc8
+------------------
+0x00000000		-> 0x00ffefc4
+------------------
+0x00000000		-> 0x00ffefc0
+------------------
+0x00000004		-> 0x00ffefbc
+------------------
+0x00000004		-> 0x00ffefb8
+------------------
+
+
+/************************************************************************************/
+
+Question 3: Which byte order is adopted in the host machine that we are using ? How did you find out ?
+
+Answer: Little Endian is adopted in the host machine that we are using.
+I used the lscpu command which displays the information about the CPU architecture. Among all the information provided in the output, there exists a row mentioning Byte order which mentions "Little Endian" for our host machine.
+
+/***********************************************************************************/
+
+Question 4: Briefly describe the mov, push, pusha, pop, and popa instructions in the x86.
+
+Answer: a) mov: This is the move instruction used for copying data from source to destination. For example: movb $0x05, %al will move the hexadecimal value of 5 into the register al. The "b" in movb denotes the size of operand being manipulated which is a byte here.
+
+b) push: This instruction is used for pushing the value of operand on top of the stack. 
+Example: pushl %ebp 
+This instruction will save the value of EBP on the stack. It does so by first decreasing the esp address value by 4 and then saving the ebp value at the address where esp is now pointing at.
+
+c) pusha: Used to push the contents of all the general purpose registers onto the stack.They are stored in the following order: EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI.
+
+d) pop: This is used to remove the element at the top of the stack and save it in some specified memory location or register.
+
+e) popa: Much like the pusha instruction, popa instruction pops all words from the stack into the general purpose registers. The order of this is : EDI, ESI, EBP, EBX, EDX, ECX, EAX.
+
+/***********************************************************************************/
+
+Question 5: In a stack frame, local variables are stored below the top of the stack. In task 3, does your result show all the local variables declared in your printtos function? If not, can you explain that? (hint: try to disable the compiler optimization by specifing -O0 in your Makefile)
+
+Answer: All the local variables are not shown in the printtos function. The reason behind this is that the compiler tries to optimize the program by moving these local variables into registers instead of pushing them onto the stack.
+However, to disable this, we can add the below line in our Makefile in the compile directory.
+
+CFLAGS  = -m32 -march=i586 -fno-builtin -c -Wall -O0 ${DEFS} ${INCLUDE}
+
+Here, by adding -O0, it makes sure that we have disabled the compiler optimization and the local variables should be visible on the stack afterwards. 
+
+
+
+
+References:
+1) https://en.wikibooks.org/wiki/X86_Assembly/GAS_Syntax
+2) https://linux.die.net/man/1/lscpu
+ 
